@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KAS Solar — Internal Dashboard</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#070A0F">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%98%80%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#F59E0B;--gold2:#FBBF24;--green:#10B981;--green2:#34D399;
+  --bg:#070A0F;--panel:#0E141B;--panel2:#121B26;--panel3:#0A1017;
+  --line:rgba(255,255,255,.08);--line2:rgba(255,255,255,.14);
+  --text:#E8EEF5;--muted:#8FA0B2;--dim:#67788A;
+  --danger:#EF4444;--warn:#F59E0B;--ok:#10B981;--info:#3B82F6;--purple:#A855F7;
+  --r:14px;--font-body:'Inter',system-ui,sans-serif;--font-head:'Sora',sans-serif;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+h1,h2,h3,h4{font-family:var(--font-head);letter-spacing:-.02em;line-height:1.15}
+button,input,select,textarea{font-family:inherit;font-size:14px}
+a{color:inherit;text-decoration:none}
+input,select,textarea{background:#080D14;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:11px 14px;width:100%;outline:none;transition:.18s}
+input:focus,select:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(245,158,11,.14)}
+input::placeholder,textarea::placeholder{color:#4F5E70}
+select{cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%238FA0B2' d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:14px;padding-right:34px}
+.hidden{display:none!important}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 18px;border-radius:10px;font-size:13.5px;font-weight:600;border:1px solid transparent;cursor:pointer;transition:.2s;white-space:nowrap}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#181006}
+.btn-gold:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(245,158,11,.26)}
+.btn-ghost{background:rgba(255,255,255,.04);border-color:var(--line2);color:var(--text)}
+.btn-ghost:hover{background:rgba(255,255,255,.08)}
+.btn-sm{padding:8px 14px;font-size:12.5px}
+.icon-btn{background:transparent;border:1px solid var(--line);color:var(--muted);padding:7px 12px;border-radius:9px;font-size:12px;font-weight:500;cursor:pointer;transition:.2s}
+.icon-btn:hover{color:var(--text);border-color:var(--line2)}
+.link-btn{background:none;border:none;color:var(--gold);font-size:12.5px;font-weight:600;cursor:pointer;padding:0}
+.link-btn:hover{color:var(--gold2)}
+.login-screen{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(900px 460px at 12% -12%,rgba(245,158,11,.18),transparent 62%),radial-gradient(820px 430px at 88% -6%,rgba(16,185,129,.14),transparent 62%),var(--bg)}
+.login-card{width:100%;max-width:400px;background:linear-gradient(165deg,var(--panel2),#0A1017);border:1px solid var(--line);border-radius:20px;padding:36px 28px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.login-brand{display:flex;align-items:center;gap:14px;margin-bottom:8px}
+.login-logo{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,var(--gold),var(--green));display:grid;place-items:center;font-size:22px;color:#07100A;flex-shrink:0}
+.login-brand h1{font-size:18px;font-weight:800;letter-spacing:.02em}
+.login-brand p{font-size:11.5px;color:var(--muted);letter-spacing:.10em;text-transform:uppercase;font-weight:600}
+.login-sub{color:var(--muted);font-size:13.5px;margin:14px 0 26px;padding-bottom:20px;border-bottom:1px solid var(--line)}
+#loginForm label{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--muted);margin-bottom:8px}
+#pinInput{text-align:center;font-size:24px;letter-spacing:.5em;padding:16px;font-family:var(--font-head);font-weight:700}
+#loginForm .btn{margin-top:16px;width:100%;padding:13px}
+.login-error{color:#FCA5A5;font-size:12.5px;margin-top:10px;min-height:16px}
+.login-foot{color:var(--dim);font-size:11.5px;text-align:center;margin-top:20px}
+.app{min-height:100vh;display:flex;flex-direction:column}
+.app-header{position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 18px;background:rgba(7,10,15,.85);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.app-brand{display:flex;align-items:center;gap:11px}
+.app-logo{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--gold),var(--green));display:grid;place-items:center;font-size:17px;color:#07100A;flex-shrink:0}
+.app-brand b{display:block;font-family:var(--font-head);font-size:14px;font-weight:800;letter-spacing:.02em}
+.app-brand small{display:block;font-size:10.5px;color:var(--muted);letter-spacing:.10em;text-transform:uppercase}
+.app-header-right{display:flex;align-items:center;gap:10px}
+.app-date{font-size:12px;color:var(--muted);display:none}
+@media(min-width:560px){.app-date{display:inline}}
+.tabs{position:sticky;top:62px;z-index:35;display:flex;gap:6px;padding:10px 18px;background:rgba(7,10,15,.85);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{background:transparent;border:1px solid transparent;color:var(--muted);padding:9px 16px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;white-space:nowrap}
+.tab:hover{color:var(--text);background:rgba(255,255,255,.04)}
+.tab.active{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.30);color:var(--gold)}
+.app-main{padding:22px 18px 60px;max-width:1240px;margin:0 auto;width:100%;flex:1}
+.tab-panel{display:none;animation:fade .3s ease}
+.tab-panel.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.section-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:20px;flex-wrap:wrap}
+.section-head h2{font-size:22px;font-weight:800}
+.section-sub{color:var(--muted);font-size:13px;margin-top:4px}
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:22px}
+@media(min-width:720px){.stats-grid{grid-template-columns:repeat(4,1fr)}}
+.stat-card{background:linear-gradient(160deg,var(--panel),#0A1017);border:1px solid var(--line);border-radius:14px;padding:16px 18px;position:relative;overflow:hidden}
+.stat-card::before{content:"";position:absolute;top:0;left:0;width:3px;height:100%;background:linear-gradient(180deg,var(--gold),var(--green))}
+.stat-label{font-size:11px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.stat-value{font-family:var(--font-head);font-size:22px;font-weight:800;color:var(--text);line-height:1.1}
+.stat-value small{font-size:12px;font-weight:600;color:var(--muted);margin-left:3px}
+.stat-meta{font-size:11.5px;color:var(--dim);margin-top:6px}
+.panel-grid{display:grid;grid-template-columns:1fr;gap:16px}
+@media(min-width:820px){.panel-grid{grid-template-columns:1fr 1fr}}
+.panel{background:linear-gradient(165deg,var(--panel2),#0A1017);border:1px solid var(--line);border-radius:14px;padding:18px}
+.panel-wide{grid-column:1/-1}
+.panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px}
+.panel-head h3{font-size:14.5px;font-weight:700}
+.toolbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.toolbar input,.toolbar select{flex:1;min-width:180px}
+.toolbar select{flex:0 0 auto;min-width:160px}
+.table-wrap{background:linear-gradient(165deg,var(--panel2),#0A1017);border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:760px;font-size:13.5px}
+thead{background:rgba(255,255,255,.025);border-bottom:1px solid var(--line)}
+th{text-align:left;padding:13px 14px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+td{padding:14px;border-bottom:1px solid var(--line);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:rgba(255,255,255,.02)}
+.cell-primary{color:var(--text);font-weight:600}
+.cell-meta{font-size:11.5px;color:var(--dim);margin-top:3px}
+.cell-actions{display:flex;gap:6px;justify-content:flex-end}
+.action-btn{background:transparent;border:1px solid var(--line);color:var(--muted);padding:5px 9px;border-radius:7px;font-size:11.5px;cursor:pointer;transition:.18s;font-weight:500;display:inline-flex;align-items:center;justify-content:center}
+.action-btn:hover{color:var(--text);border-color:var(--line2)}
+.action-btn.danger:hover{color:#FCA5A5;border-color:rgba(239,68,68,.36)}
+.badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.badge-survey{background:rgba(59,130,246,.14);color:#93C5FD;border:1px solid rgba(59,130,246,.30)}
+.badge-pending{background:rgba(245,158,11,.14);color:var(--gold2);border:1px solid rgba(245,158,11,.30)}
+.badge-in-progress{background:rgba(251,191,36,.14);color:#FCD34D;border:1px solid rgba(251,191,36,.30)}
+.badge-completed{background:rgba(16,185,129,.14);color:#6EE7B7;border:1px solid rgba(16,185,129,.30)}
+.badge-warranty{background:rgba(168,85,247,.14);color:#D8B4FE;border:1px solid rgba(168,85,247,.30)}
+.badge-available{background:rgba(16,185,129,.14);color:#6EE7B7;border:1px solid rgba(16,185,129,.30)}
+.badge-on-site{background:rgba(245,158,11,.14);color:var(--gold2);border:1px solid rgba(245,158,11,.30)}
+.badge-off-duty{background:rgba(107,114,128,.14);color:#D1D5DB;border:1px solid rgba(107,114,128,.30)}
+.badge-low{background:rgba(239,68,68,.14);color:#FCA5A5;border:1px solid rgba(239,68,68,.30)}
+.badge-ok{background:rgba(16,185,129,.14);color:#6EE7B7;border:1px solid rgba(16,185,129,.30)}
+.eng-grid{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:640px){.eng-grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1000px){.eng-grid{grid-template-columns:repeat(3,1fr)}}
+.eng-card{background:linear-gradient(165deg,var(--panel2),#0A1017);border:1px solid var(--line);border-radius:14px;padding:18px}
+.eng-card-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.eng-avatar{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--gold),var(--green2));color:#181006;display:grid;place-items:center;font-family:var(--font-head);font-weight:800;font-size:15px;flex-shrink:0}
+.eng-card-head h4{font-size:14.5px;font-weight:700;line-height:1.2}
+.eng-card-head p{font-size:11.5px;color:var(--muted);margin-top:2px}
+.eng-meta-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted)}
+.eng-card-actions{display:flex;gap:6px;margin-top:8px}
+.eng-chips{display:flex;flex-wrap:wrap;gap:8px}
+.eng-chip{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:999px;background:rgba(255,255,255,.03);border:1px solid var(--line);font-size:12.5px;font-weight:500}
+.eng-chip .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot-available{background:var(--ok);box-shadow:0 0 8px rgba(16,185,129,.5)}
+.dot-on-site{background:var(--warn);box-shadow:0 0 8px rgba(245,158,11,.5)}
+.dot-off-duty{background:#6B7280}
+.eng-chip small{color:var(--muted);font-size:11px}
+.mini-table-wrap table{min-width:0}
+.mini-table-wrap th{font-size:10px;padding:10px 10px}
+.mini-table-wrap td{font-size:12.5px;padding:10px}
+.modal{position:fixed;inset:0;z-index:80;display:grid;place-items:center;padding:20px;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.modal-card{width:100%;max-width:520px;max-height:92vh;overflow-y:auto;background:linear-gradient(165deg,var(--panel2),#0A1017);border:1px solid var(--line2);border-radius:18px;padding:22px}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:12px}
+.modal-head h3{font-size:17px;font-weight:800}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:480px){.field-row{grid-template-columns:1fr}}
+textarea{resize:vertical;min-height:70px;font-family:inherit}
+.empty{padding:40px 20px;text-align:center;color:var(--dim);font-size:13px}
+.empty-ico{font-size:32px;margin-bottom:8px;opacity:.5}
+</style>
+</head>
+<body>
+
+<div id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="login-logo">☀</div>
+      <div>
+        <h1>KAS SOLAR</h1>
+        <p>Internal Dashboard</p>
+      </div>
+    </div>
+    <p class="login-sub">Restricted access — staff only</p>
+    <form id="loginForm">
+      <label for="pinInput">Enter Access PIN</label>
+      <input type="password" id="pinInput" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="••••" required>
+      <p class="login-error" id="loginError"></p>
+      <button type="submit" class="btn btn-gold">Unlock Dashboard</button>
+    </form>
+    <p class="login-foot">Contact the administrator if you don't have access.</p>
+  </div>
+</div>
+
+<div id="app" class="app hidden">
+  <header class="app-header">
+    <div class="app-brand">
+      <div class="app-logo">☀</div>
+      <div>
+        <b>KAS SOLAR</b>
+        <small>Internal Dashboard</small>
+      </div>
+    </div>
+    <div class="app-header-right">
+      <span class="app-date" id="appDate"></span>
+      <button class="icon-btn" id="logoutBtn" title="Lock">🔒 Lock</button>
+    </div>
+  </header>
+  <nav class="tabs">
+    <button class="tab active" data-tab="overview">📊 Overview</button>
+    <button class="tab" data-tab="installations">🔧 Installations</button>
+    <button class="tab" data-tab="inventory">🔋 Inventory</button>
+    <button class="tab" data-tab="engineers">👷 Engineers</button>
+  </nav>
+  <main class="app-main">
+    <section id="tab-overview" class="tab-panel active">
+      <div class="section-head">
+        <div>
+          <h2>Overview</h2>
+          <p class="section-sub">Real-time snapshot of operations</p>
+        </div>
+      </div>
+      <div class="stats-grid" id="statsGrid"></div>
+      <div class="panel-grid">
+        <div class="panel">
+          <div class="panel-head"><h3>Recent Installations</h3><button class="link-btn" data-jump="installations">View all →</button></div>
+          <div id="recentInstalls" class="mini-table-wrap"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>Low Stock Alerts</h3><button class="link-btn" data-jump="inventory">Manage →</button></div>
+          <div id="lowStock" class="mini-table-wrap"></div>
+        </div>
+        <div class="panel panel-wide">
+          <div class="panel-head"><h3>Engineer Status</h3><button class="link-btn" data-jump="engineers">Manage →</button></div>
+          <div id="engineerStatus" class="eng-chips"></div>
+        </div>
+      </div>
+    </section>
+    <section id="tab-installations" class="tab-panel">
+      <div class="section-head">
+        <div><h2>Installations</h2><p class="section-sub">Track every job from survey to warranty</p></div>
+        <button class="btn btn-gold" data-add="install">+ New Installation</button>
+      </div>
+      <div class="toolbar">
+        <input type="search" id="searchInstall" placeholder="Search customer, phone, engineer…">
+        <select id="filterStatus">
+          <option value="">All Statuses</option>
+          <option value="survey">Survey</option>
+          <option value="pending">Pending</option>
+          <option value="in-progress">In Progress</option>
+          <option value="completed">Completed</option>
+          <option value="warranty">Warranty</option>
+        </select>
+      </div>
+      <div class="table-wrap"><table id="installTable"></table></div>
+    </section>
+    <section id="tab-inventory" class="tab-panel">
+      <div class="section-head">
+        <div><h2>Inventory</h2><p class="section-sub">Batteries, panels, inverters and accessories</p></div>
+        <button class="btn btn-gold" data-add="item">+ Add Item</button>
+      </div>
+      <div class="toolbar">
+        <input type="search" id="searchItem" placeholder="Search name, brand, spec…">
+        <select id="filterCategory">
+          <option value="">All Categories</option>
+          <option value="Battery">Battery</option>
+          <option value="Panel">Panel</option>
+          <option value="Inverter">Inverter</option>
+          <option value="Accessory">Accessory</option>
+        </select>
+      </div>
+      <div class="table-wrap"><table id="itemTable"></table></div>
+    </section>
+    <section id="tab-engineers" class="tab-panel">
+      <div class="section-head">
+        <div><h2>Site Engineers</h2><p class="section-sub">Assign, track and contact your field team</p></div>
+        <button class="btn btn-gold" data-add="eng">+ Add Engineer</button>
+      </div>
+      <div class="toolbar">
+        <input type="search" id="searchEng" placeholder="Search name, phone, role…">
+      </div>
+      <div class="eng-grid" id="engGrid"></div>
+    </section>
+  </main>
+</div>
+
+<div id="modal" class="modal hidden">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3 id="modalTitle">Add</h3>
+      <button class="icon-btn" id="modalClose" type="button">✕</button>
+    </div>
+    <form id="modalForm">
+      <div id="modalFields"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="modalCancel">Cancel</button>
+        <button type="submit" class="btn btn-gold" id="modalSave">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+var PIN = '1973';
+var KEYS = { auth:'kas_auth', installs:'kas_installations', items:'kas_inventory', engineers:'kas_engineers', seeded:'kas_seeded_v1' };
+var STATUS_LABELS = { survey:'Survey', pending:'Pending', 'in-progress':'In Progress', completed:'Completed', warranty:'Warranty', available:'Available', 'on-site':'On-Site', 'off-duty':'Off-Duty' };
+var state = { installs:[], items:[], engineers:[], editing:null, searchInstall:'', filterInstallStatus:'', searchItem:'', filterCategory:'', searchEng:'' };
+
+function $(id){ return document.getElementById(id); }
+function $$(s,c){ return Array.prototype.slice.call((c||document).querySelectorAll(s)); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+function money(n){ return '\u20A6'+(Number(n)||0).toLocaleString('en-NG'); }
+function num(n){ return Number(n)||0; }
+function fmtDate(d){ if(!d) return '\u2014'; var x=new Date(d); if(isNaN(x)) return esc(d); return x.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}); }
+function readJSON(k,d){ try{ var v=localStorage.getItem(k); return v?JSON.parse(v):d; } catch(e){ return d; } }
+function writeJSON(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); } catch(e){} }
+function isAuthed(){ return sessionStorage.getItem(KEYS.auth)==='1'; }
+function setAuthed(v){ if(v) sessionStorage.setItem(KEYS.auth,'1'); else sessionStorage.removeItem(KEYS.auth); }
+function persist(){ writeJSON(KEYS.installs,state.installs); writeJSON(KEYS.items,state.items); writeJSON(KEYS.engineers,state.engineers); }
+
+function seed(){
+  var e1=uid(), e2=uid(), e3=uid(), e4=uid();
+  state.engineers = [
+    {id:e1,name:'Engr. Bello Mohammed',phone:'0803 555 1111',role:'Lead Engineer',status:'on-site',notes:''},
+    {id:e2,name:'Ibrahim Suleiman',phone:'0812 666 2222',role:'Site Technician',status:'available',notes:''},
+    {id:e3,name:'Abdulrahman Yakubu',phone:'0705 777 3333',role:'Electrical Engineer',status:'on-site',notes:''},
+    {id:e4,name:'Musa Adamu',phone:'0806 888 4444',role:'Apprentice',status:'off-duty',notes:''}
+  ];
+  state.installs = [
+    {id:uid(),customer:'Alhaji Musa Ibrahim',phone:'0803 111 2233',address:'Jimeta, Yola North',systemKw:5,panels:9,batteries:4,inverterVa:5000,engineerId:e1,status:'in-progress',date:'2025-02-10',amount:2850000,notes:'Hybrid system with generator changeover'},
+    {id:uid(),customer:'Hajiya Aisha Bello',phone:'0812 444 5566',address:'GRA, Yola South',systemKw:3,panels:6,batteries:2,inverterVa:3000,engineerId:e2,status:'completed',date:'2025-01-22',amount:1450000,notes:'Residential rooftop'},
+    {id:uid(),customer:'Yola Pharmacy Ltd',phone:'0705 777 8899',address:'Market Road, Yola',systemKw:10,panels:18,batteries:8,inverterVa:10000,engineerId:e3,status:'pending',date:'2025-02-28',amount:6200000,notes:'Commercial three-phase, awaiting deposit'},
+    {id:uid(),customer:'Mr. Yakubu Adamu',phone:'0806 222 3344',address:'Numan Road, Yola',systemKw:2,panels:4,batteries:2,inverterVa:2000,engineerId:'',status:'survey',date:'2025-03-02',amount:950000,notes:'Site survey scheduled'}
+  ];
+  state.items = [
+    {id:uid(),name:'Felicity 200Ah Tubular Battery',category:'Battery',brand:'Felicity',spec:'12V 200Ah',quantity:18,unitPrice:385000,reorderLevel:5},
+    {id:uid(),name:'Luminous 200Ah Tall Tubular',category:'Battery',brand:'Luminous',spec:'12V 200Ah',quantity:3,unitPrice:410000,reorderLevel:5},
+    {id:uid(),name:'Canadian Solar 550W Panel',category:'Panel',brand:'Canadian Solar',spec:'550W Mono',quantity:42,unitPrice:145000,reorderLevel:10},
+    {id:uid(),name:'Jinko 450W Panel',category:'Panel',brand:'Jinko',spec:'450W Mono',quantity:12,unitPrice:120000,reorderLevel:10},
+    {id:uid(),name:'Growatt 5kVA Hybrid Inverter',category:'Inverter',brand:'Growatt',spec:'5kVA 48V',quantity:6,unitPrice:950000,reorderLevel:3},
+    {id:uid(),name:'Victron 3kVA Inverter',category:'Inverter',brand:'Victron',spec:'3kVA 24V',quantity:2,unitPrice:1200000,reorderLevel:3},
+    {id:uid(),name:'MC4 Connectors (pair)',category:'Accessory',brand:'Generic',spec:'30A',quantity:100,unitPrice:1500,reorderLevel:20},
+    {id:uid(),name:'Solar DC Cable 6mm (per m)',category:'Accessory',brand:'Generic',spec:'6mm\u00B2',quantity:250,unitPrice:1200,reorderLevel:50}
+  ];
+  persist();
+}
+function seedIfEmpty(){ if(localStorage.getItem(KEYS.seeded)) return; seed(); localStorage.setItem(KEYS.seeded,'1'); }
+
+function engineerById(id){ for(var i=0;i<state.engineers.length;i++){ if(state.engineers[i].id===id) return state.engineers[i]; } return null; }
+function statusBadge(s){ return '<span class="badge badge-'+esc(s)+'">'+esc(STATUS_LABELS[s]||s)+'</span>'; }
+
+function renderAll(){ renderOverview(); renderInstallations(); renderInventory(); renderEngineers(); }
+
+function statCard(label,value,meta){
+  return '<div class="stat-card"><div class="stat-label">'+esc(label)+'</div><div class="stat-value">'+value+'</div><div class="stat-meta">'+esc(meta)+'</div></div>';
+}
+
+function renderOverview(){
+  var active = state.installs.filter(function(i){ return i.status!=='completed' && i.status!=='warranty'; }).length;
+  var completed = state.installs.filter(function(i){ return i.status==='completed'; });
+  var totalKw = completed.reduce(function(s,i){ return s+num(i.systemKw); },0);
+  var revenue = completed.reduce(function(s,i){ return s+num(i.amount); },0);
+  var invValue = state.items.reduce(function(s,i){ return s+num(i.quantity)*num(i.unitPrice); },0);
+  var totalQty = state.items.reduce(function(s,i){ return s+num(i.quantity); },0);
+  $('statsGrid').innerHTML =
+    statCard('Active Jobs',active,'Survey \u00B7 Pending \u00B7 In Progress')+
+    statCard('Installed Capacity',totalKw.toFixed(1)+' <small>kW</small>','From '+completed.length+' completed installs')+
+    statCard('Inventory Value',money(invValue),totalQty+' units in stock')+
+    statCard('Revenue (Completed)',money(revenue),'Total value delivered');
+  var recent = state.installs.slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); }).slice(0,5);
+  if(!recent.length){ $('recentInstalls').innerHTML='<div class="empty"><div class="empty-ico">📋</div>No installations yet</div>'; }
+  else{
+    var rows = recent.map(function(r){
+      var eng = engineerById(r.engineerId);
+      return '<tr><td><div class="cell-primary">'+esc(r.customer)+'</div><div class="cell-meta">'+num(r.systemKw)+' kW \u00B7 '+num(r.panels)+' panels</div></td>'+'<td>'+esc(eng?eng.name:'Unassigned')+'</td><td>'+statusBadge(r.status)+'</td></tr>';
+    }).join('');
+    $('recentInstalls').innerHTML='<table><thead><tr><th>Customer</th><th>Engineer</th><th>Status</th></tr></thead><tbody>'+rows+'</tbody></table>';
+  }
+  var low = state.items.filter(function(i){ return num(i.quantity)<=num(i.reorderLevel); });
+  if(!low.length){ $('lowStock').innerHTML='<div class="empty"><div class="empty-ico">✅</div>All stock levels healthy</div>'; }
+  else{
+    var rows2 = low.map(function(r){
+      return '<tr><td><div class="cell-primary">'+esc(r.name)+'</div><div class="cell-meta">'+esc(r.brand||'')+' '+esc(r.spec||'')+'</div></td>'+'<td style="text-align:right"><b style="color:#FCA5A5">'+num(r.quantity)+'</b> <span style="color:#67788A;font-size:11px">/ '+num(r.reorderLevel)+' min</span></td></tr>';
+    }).join('');
+    $('lowStock').innerHTML='<table><thead><tr><th>Item</th><th style="text-align:right">Stock</th></tr></thead><tbody>'+rows2+'</tbody></table>';
+  }
+  if(!state.engineers.length){ $('engineerStatus').innerHTML='<div class="empty" style="padding:20px"><div class="empty-ico">👷</div>No engineers added</div>'; }
+  else{
+    $('engineerStatus').innerHTML = state.engineers.map(function(e){
+      var dot = e.status==='on-site'?'dot-on-site':(e.status==='available'?'dot-available':'dot-off-duty');
+      var jobs = state.installs.filter(function(i){ return i.engineerId===e.id && i.status!=='completed' && i.status!=='warranty'; }).length;
+      return '<span class="eng-chip"><span class="dot '+dot+'"></span>'+esc(e.name)+' <small>('+jobs+' jobs)</small></span>';
+    }).join('');
+  }
+}
+
+function renderInstallations(){
+  var q = state.searchInstall.toLowerCase();
+  var fs = state.filterInstallStatus;
+  var list = state.installs.filter(function(r){
+    if(fs && r.status!==fs) return false;
+    if(!q) return true;
+    var eng = engineerById(r.engineerId);
+    return (r.customer||'').toLowerCase().indexOf(q)>=0 || (r.phone||'').toLowerCase().indexOf(q)>=0 || (r.address||'').toLowerCase().indexOf(q)>=0 || (eng&&eng.name||'').toLowerCase().indexOf(q)>=0;
+  });
+  if(!list.length){ $('installTable').innerHTML='<tbody><tr><td colspan="7"><div class="empty"><div class="empty-ico">🔧</div>No installations match your filter</div></td></tr></tbody>'; return; }
+  var rows = list.map(function(r){
+    var eng = engineerById(r.engineerId);
+    var waPhone = (r.phone||'').replace(/\D/g,''); if(waPhone.indexOf('0')===0) waPhone='234'+waPhone.slice(1);
+    var waUrl = waPhone?'https://wa.me/'+waPhone:'#';
+    return '<tr>'
+      + '<td><div class="cell-primary">'+esc(r.customer)+'</div><div class="cell-meta">'+esc(r.phone||'\u2014')+'</div></td>'
+      + '<td><div class="cell-primary">'+num(r.systemKw)+' kW</div><div class="cell-meta">'+num(r.panels)+' panels \u00B7 '+num(r.batteries)+' batteries</div></td>'
+      + '<td>'+esc(eng?eng.name:'\u2014')+'</td>'
+      + '<td>'+statusBadge(r.status)+'</td>'
+      + '<td>'+fmtDate(r.date)+'</td>'
+      + '<td><div class="cell-primary">'+money(r.amount)+'</div></td>'
+      + '<td><div class="cell-actions">'
+        + (waPhone?'<a class="action-btn" href="'+waUrl+'" target="_blank" rel="noopener">💬</a>':'')
+        + '<button class="action-btn" onclick="window._kasEdit(\'install\',\''+esc(r.id)+'\')">Edit</button>'
+        + '<button class="action-btn danger" onclick="window._kasDel(\'install\',\''+esc(r.id)+'\')">Del</button>'
+      + '</div></td></tr>';
+  }).join('');
+  $('installTable').innerHTML='<thead><tr><th>Customer</th><th>System</th><th>Engineer</th><th>Status</th><th>Date</th><th>Amount</th><th style="text-align:right">Actions</th></tr></thead><tbody>'+rows+'</tbody>';
+}
+
+function renderInventory(){
+  var q = state.searchItem.toLowerCase();
+  var fc = state.filterCategory;
+  var list = state.items.filter(function(r){
+    if(fc && r.category!==fc) return false;
+    if(!q) return true;
+    return (r.name||'').toLowerCase().indexOf(q)>=0 || (r.brand||'').toLowerCase().indexOf(q)>=0 || (r.spec||'').toLowerCase().indexOf(q)>=0;
+  });
+  if(!list.length){ $('itemTable').innerHTML='<tbody><tr><td colspan="7"><div class="empty"><div class="empty-ico">🔋</div>No items match your filter</div></td></tr></tbody>'; return; }
+  var rows = list.map(function(r){
+    var isLow = num(r.quantity)<=num(r.reorderLevel);
+    var val = num(r.quantity)*num(r.unitPrice);
+    return '<tr>'
+      + '<td><div class="cell-primary">'+esc(r.name)+'</div><div class="cell-meta">'+esc(r.brand||'')+' \u00B7 '+esc(r.spec||'')+'</div></td>'
+      + '<td>'+esc(r.category)+'</td>'
+      + '<td><div class="cell-primary">'+num(r.quantity)+'</div><div class="cell-meta">min '+num(r.reorderLevel)+'</div></td>'
+      + '<td>'+money(r.unitPrice)+'</td>'
+      + '<td>'+money(val)+'</td>'
+      + '<td>'+(isLow?'<span class="badge badge-low">Low</span>':'<span class="badge badge-ok">OK</span>')+'</td>'
+      + '<td><div class="cell-actions">'
+        + '<button class="action-btn" onclick="window._kasEdit(\'item\',\''+esc(r.id)+'\')">Edit</button>'
+        + '<button class="action-btn danger" onclick="window._kasDel(\'item\',\''+esc(r.id)+'\')">Del</button>'
+      + '</div></td></tr>';
+  }).join('');
+  $('itemTable').innerHTML='<thead><tr><th>Item</th><th>Category</th><th>Qty</th><th>Unit Price</th><th>Total Value</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead><tbody>'+rows+'</tbody>';
+}
+
+function renderEngineers(){
+  var q = state.searchEng.toLowerCase();
+  var list = state.engineers.filter(function(r){
+    if(!q) return true;
+    return (r.name||'').toLowerCase().indexOf(q)>=0 || (r.phone||'').toLowerCase().indexOf(q)>=0 || (r.role||'').toLowerCase().indexOf(q)>=0;
+  });
+  if(!list.length){ $('engGrid').innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-ico">👷</div>No engineers match your search</div>'; return; }
+  $('engGrid').innerHTML = list.map(function(e){
+    var initials = (e.name||'').split(' ').filter(Boolean).map(function(w){ return w[0]; }).slice(0,2).join('').toUpperCase();
+    var jobs = state.installs.filter(function(i){ return i.engineerId===e.id && i.status!=='completed' && i.status!=='warranty'; }).length;
+    var phone = (e.phone||'').replace(/\D/g,''); if(phone.indexOf('0')===0) phone='234'+phone.slice(1);
+    return '<div class="eng-card">'
+      + '<div class="eng-card-head"><div class="eng-avatar">'+esc(initials||'?')+'</div><div><h4>'+esc(e.name)+'</h4><p>'+esc(e.role||'\u2014')+'</p></div></div>'
+      + '<div class="eng-meta-row"><span>Status</span>'+statusBadge(e.status)+'</div>'
+      + '<div class="eng-meta-row"><span>Active Jobs</span><span style="font-family:var(--font-head);font-weight:700;color:'+(jobs?'var(--gold)':'var(--muted)')+'">'+jobs+'</span></div>'
+      + '<div class="eng-meta-row"><span>Phone</span><span style="color:var(--text)">'+esc(e.phone||'\u2014')+'</span></div>'
+      + '<div class="eng-card-actions">'
+        + (phone?'<a class="action-btn" style="flex:1" href="https://wa.me/'+phone+'" target="_blank" rel="noopener">💬 WhatsApp</a>':'')
+        + (e.phone?'<a class="action-btn" style="flex:1" href="tel:'+esc(e.phone.replace(/\s/g,''))+'">📞 Call</a>':'')
+      + '</div>'
+      + '<div style="display:flex;gap:6px;margin-top:8px">'
+        + '<button class="action-btn" style="flex:1" onclick="window._kasEdit(\'eng\',\''+esc(e.id)+'\')">Edit</button>'
+        + '<button class="action-btn danger" style="flex:1" onclick="window._kasDel(\'eng\',\''+esc(e.id)+'\')">Delete</button>'
+      + '</div></div>';
+  }).join('');
+}
+
+function field(label,inputHtml){ return '<div class="field"><label>'+esc(label)+'</label>'+inputHtml+'</div>'; }
+
+function buildFields(type, data){
+  if(type==='install'){
+    var engOpts='<option value="">\u2014 Unassigned \u2014</option>';
+    state.engineers.forEach(function(e){ engOpts+='<option value="'+esc(e.id)+'"'+(data.engineerId===e.id?' selected':'')+'>'+esc(e.name)+'</option>'; });
+    var stOpts = ['survey','pending','in-progress','completed','warranty'].map(function(s){ return '<option value="'+s+'"'+(data.status===s?' selected':'')+'>'+STATUS_LABELS[s]+'</option>'; }).join('');
+    return field('Customer Name','<input name="customer" required value="'+esc(data.customer||'')+'">')
+      + '<div class="field-row">'+field('Phone','<input name="phone" value="'+esc(data.phone||'')+'">')+field('Date','<input name="date" type="date" value="'+esc(data.date||'')+'">')+'</div>'
+      + field('Address','<input name="address" value="'+esc(data.address||'')+'">')
+      + '<div class="field-row">'+field('System Size (kW)','<input name="systemKw" type="number" step="0.1" min="0" value="'+esc(data.systemKw||'')+'">')+field('Panel Count','<input name="panels" type="number" min="0" value="'+esc(data.panels||'')+'">')+'</div>'
+      + '<div class="field-row">'+field('Battery Count','<input name="batteries" type="number" min="0" value="'+esc(data.batteries||'')+'">')+field('Inverter (VA)','<input name="inverterVa" type="number" min="0" value="'+esc(data.inverterVa||'')+'">')+'</div>'
+      + '<div class="field-row">'+field('Assigned Engineer','<select name="engineerId">'+engOpts+'</select>')+field('Status','<select name="status">'+stOpts+'</select>')+'</div>'
+      + field('Amount (\u20A6)','<input name="amount" type="number" min="0" step="100" value="'+esc(data.amount||'')+'">')
+      + field('Notes','<textarea name="notes">'+esc(data.notes||'')+'</textarea>');
+  }
+  if(type==='item'){
+    var catOpts = ['Battery','Panel','Inverter','Accessory'].map(function(c){ return '<option value="'+c+'"'+(data.category===c?' selected':'')+'>'+c+'</option>'; }).join('');
+    return field('Item Name','<input name="name" required value="'+esc(data.name||'')+'">')
+      + '<div class="field-row">'+field('Category','<select name="category">'+catOpts+'</select>')+field('Brand','<input name="brand" value="'+esc(data.brand||'')+'">')+'</div>'
+      + field('Specification','<input name="spec" placeholder="e.g. 12V 200Ah" value="'+esc(data.spec||'')+'">')
+      + '<div class="field-row">'+field('Quantity','<input name="quantity" type="number" min="0" value="'+esc(data.quantity||'')+'">')+field('Reorder Level','<input name="reorderLevel" type="number" min="0" value="'+esc(data.reorderLevel||'')+'">')+'</div>'
+      + field('Unit Price (\u20A6)','<input name="unitPrice" type="number" min="0" step="100" value="'+esc(data.unitPrice||'')+'">');
+  }
+  var stOpts2 = ['available','on-site','off-duty'].map(function(s){ return '<option value="'+s+'"'+(data.status===s?' selected':'')+'>'+STATUS_LABELS[s]+'</option>'; }).join('');
+  return field('Full Name','<input name="name" required value="'+esc(data.name||'')+'">')
+    + '<div class="field-row">'+field('Phone','<input name="phone" value="'+esc(data.phone||'')+'">')+field('Status','<select name="status">'+stOpts2+'</select>')+'</div>'
+    + field('Role','<input name="role" placeholder="e.g. Lead Engineer" value="'+esc(data.role||'')+'">')
+    + field('Notes','<textarea name="notes">'+esc(data.notes||'')+'</textarea>');
+}
+
+function openModal(type, id){
+  state.editing = { type:type, id:id||null };
+  var data = {}, title = '';
+  if(id){
+    var list = type==='install'?state.installs:(type==='item'?state.items:state.engineers);
+    for(var i=0;i<list.length;i++){ if(list[i].id===id){ data = list[i]; break; } }
+    title = 'Edit '+(type==='install'?'Installation':type==='item'?'Inventory Item':'Engineer');
+  } else {
+    if(type==='install') data = { status:'survey', date:new Date().toISOString().slice(0,10) };
+    else if(type==='item') data = { category:'Battery', quantity:1, reorderLevel:5 };
+    else data = { status:'available' };
+    title = 'Add '+(type==='install'?'Installation':type==='item'?'Inventory Item':'Engineer');
+  }
+  $('modalTitle').textContent = title;
+  $('modalFields').innerHTML = buildFields(type, data);
+  $('modal').classList.remove('hidden');
+}
+
+function closeModal(){ $('modal').classList.add('hidden'); state.editing = null; }
+
+function saveModal(ev){
+  ev.preventDefault();
+  if(!state.editing) return;
+  var type = state.editing.type, id = state.editing.id, form = $('modalForm'), data = {};
+  ['customer','phone','address','systemKw','panels','batteries','inverterVa','engineerId','status','date','amount','notes','name','category','brand','spec','quantity','unitPrice','reorderLevel','role'].forEach(function(k){
+    var el = form.querySelector('[name="'+k+'"]'); if(el) data[k] = el.value;
+  });
+  ['systemKw','panels','batteries','inverterVa','amount','quantity','unitPrice','reorderLevel'].forEach(function(k){ if(k in data) data[k] = Number(data[k])||0; });
+  var list = type==='install'?state.installs:(type==='item'?state.items:state.engineers);
+  if(id){ for(var i=0;i<list.length;i++){ if(list[i].id===id){ list[i] = Object.assign({},list[i],data); break; } } }
+  else { data.id = uid(); list.push(data); }
+  persist(); closeModal(); renderAll(); toast(id?'Updated successfully':'Added successfully');
+}
+
+function deleteItem(type, id){
+  if(!confirm('Delete this item? This cannot be undone.')) return;
+  var list = type==='install'?state.installs:(type==='item'?state.items:state.engineers);
+  for(var i=0;i<list.length;i++){ if(list[i].id===id){ list.splice(i,1); break; } }
+  persist(); renderAll(); toast('Deleted');
+}
+
+function toast(msg){
+  var t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#10B981,#34D399);color:#04140E;padding:11px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:100;box-shadow:0 10px 30px rgba(16,185,129,.4);transition:opacity .3s';
+  document.body.appendChild(t);
+  setTimeout(function(){ t.style.opacity='0'; setTimeout(function(){ t.remove(); },300); }, 1800);
+}
+
+function showApp(){
+  $('loginScreen').classList.add('hidden');
+  $('app').classList.remove('hidden');
+  $('appDate').textContent = new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  renderAll();
+}
+function showLogin(){
+  $('app').classList.add('hidden');
+  $('loginScreen').classList.remove('hidden');
+  $('pinInput').value=''; $('loginError').textContent='';
+  setTimeout(function(){ $('pinInput').focus(); }, 100);
+}
+
+function initEvents(){
+  $$('.tab').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var name = btn.getAttribute('data-tab');
+      $$('.tab').forEach(function(b){ b.classList.toggle('active', b===btn); });
+      $$('.tab-panel').forEach(function(p){ p.classList.toggle('active', p.id==='tab-'+name); });
+    });
+  });
+  $$('[data-jump]').forEach(function(btn){
+    btn.addEventListener('click', function(){ var t = document.querySelector('.tab[data-tab="'+btn.getAttribute('data-jump')+'"]'); if(t) t.click(); });
+  });
+  $$('[data-add]').forEach(function(btn){
+    btn.addEventListener('click', function(){ openModal(btn.getAttribute('data-add')); });
+  });
+  $('searchInstall').addEventListener('input', function(e){ state.searchInstall=e.target.value; renderInstallations(); });
+  $('filterStatus').addEventListener('change', function(e){ state.filterInstallStatus=e.target.value; renderInstallations(); });
+  $('searchItem').addEventListener('input', function(e){ state.searchItem=e.target.value; renderInventory(); });
+  $('filterCategory').addEventListener('change', function(e){ state.filterCategory=e.target.value; renderInventory(); });
+  $('searchEng').addEventListener('input', function(e){ state.searchEng=e.target.value; renderEngineers(); });
+  $('modalClose').addEventListener('click', closeModal);
+  $('modalCancel').addEventListener('click', closeModal);
+  $('modalForm').addEventListener('submit', saveModal);
+  $('modal').addEventListener('click', function(e){ if(e.target===$('modal')) closeModal(); });
+  $('logoutBtn').addEventListener('click', function(){ setAuthed(false); showLogin(); });
+  window._kasEdit = function(type, id){ openModal(type, id); };
+  window._kasDel = function(type, id){ deleteItem(type, id); };
+}
+
+function boot(){
+  state.installs = readJSON(KEYS.installs, []);
+  state.items = readJSON(KEYS.items, []);
+  state.engineers = readJSON(KEYS.engineers, []);
+  seedIfEmpty();
+  state.installs = readJSON(KEYS.installs, []);
+  state.items = readJSON(KEYS.items, []);
+  state.engineers = readJSON(KEYS.engineers, []);
+  initEvents();
+  $('loginForm').addEventListener('submit', function(ev){
+    ev.preventDefault();
+    var val = $('pinInput').value.trim();
+    if(val === PIN){ setAuthed(true); showApp(); }
+    else { $('loginError').textContent='Incorrect PIN. Try again.'; $('pinInput').value=''; $('pinInput').focus(); }
+  });
+  if(isAuthed()) showApp(); else showLogin();
+}
+
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+</body>
+</html>
