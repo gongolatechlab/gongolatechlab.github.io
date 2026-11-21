@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- GLOBAL_ERROR_HANDLER -->
+    <script>
+        window.onerror = function(msg, url, line, col, error) {
+            const errDiv = document.createElement('div');
+            errDiv.style.cssText = 'position:fixed;top:0;left:0;right:0;background:red;color:white;padding:15px;z-index:999999;font-family:monospace;font-size:12px;font-weight:bold;';
+            errDiv.innerText = 'CORE.JS ERROR: ' + msg + ' (Line ' + line + ')';
+            document.body.appendChild(errDiv);
+            return false;
+        };
+        window.addEventListener('unhandledrejection', function(e) {
+            const errDiv = document.createElement('div');
+            errDiv.style.cssText = 'position:fixed;top:0;left:0;right:0;background:red;color:white;padding:15px;z-index:999999;font-family:monospace;font-size:12px;font-weight:bold;';
+            errDiv.innerText = 'PROMISE ERROR: ' + (e.reason ? e.reason.message || e.reason : 'Unknown');
+            document.body.appendChild(errDiv);
+        });
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0B1220">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Admin | Gongola ICT Hub</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="style.css?v=2">
+</head>
+<body>
+
+    <!-- AUTH SCREEN -->
+    <div id="auth-screen" class="modal-overlay active" style="z-index: 9999;">
+        <div class="modal-content" style="max-width: 400px; border-radius: 16px;">
+            <h2 style="margin-bottom: 20px; text-align: center;">Admin Login</h2>
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" id="auth-email" class="form-input">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" id="auth-password" class="form-input">
+            </div>
+            <button id="btn-login" onclick="doLogin()" class="btn btn-primary" style="width: 100%;">Login</button>
+        </div>
+    </div>
+
+    <!-- MAIN APP (Hidden until login) -->
+    <div id="app-shell" style="display: none; width: 100%; height: 100%;">
+        
+        <!-- Desktop Sidebar -->
+        <nav class="sidebar">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                <div style="width: 32px; height: 32px; background: var(--gold); color: #000; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold;">G</div>
+                <div>
+                    <div style="font-weight: 700; font-size: 14px;">Gongola ICT</div>
+                    <div style="font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;">Command Centre</div>
+                </div>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 8px; flex: 1;">
+                <button class="side-nav-item active" onclick="switchView('overview')" data-target="overview">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg> Overview
+                </button>
+                <button class="side-nav-item" onclick="switchView('signals')" data-target="signals">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg> Signals
+                </button>
+            </div>
+            
+            <button class="side-nav-item" onclick="handleLogout()" style="color: var(--red);">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg> Logout
+            </button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            
+            <!-- Mobile Header -->
+            <header style="display: flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px solid var(--border); background: var(--surface);">
+                <div style="font-weight: 700;">Command Centre</div>
+                <button onclick="openModal('post-signal-modal')" class="btn btn-primary" style="padding: 8px 12px; font-size: 12px;">+ Post</button>
+            </header>
+
+            <div class="scroll-area">
+                
+                <!-- VIEW: OVERVIEW -->
+                <div id="view-overview" class="view active">
+                    <div class="metric-grid">
+                        <div class="card" style="margin: 0;">
+                            <div class="metric-label">Balance</div>
+                            <div class="metric-value" id="stat-balance">$0.00</div>
+                        </div>
+                        <div class="card" style="margin: 0;">
+                            <div class="metric-label">Net P&L</div>
+                            <div class="metric-value text-green" id="stat-pnl">+$0.00</div>
+                        </div>
+                        <div class="card" style="margin: 0;">
+                            <div class="metric-label">Win Rate</div>
+                            <div class="metric-value" id="stat-winrate">0%</div>
+                        </div>
+                        <div class="card" style="margin: 0;">
+                            <div class="metric-label">Profit Factor</div>
+                            <div class="metric-value" id="stat-pf">0.0</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
+                            <h3 class="text-sm">Equity Curve</h3>
+                            <span class="text-xs text-muted">Last 30 Days</span>
+                        </div>
+                        <svg width="100%" height="120" viewBox="0 0 100 100" preserveAspectRatio="none">
+                            <defs>
+                                <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stop-color="var(--gold)" stop-opacity="0.3" />
+                                    <stop offset="100%" stop-color="var(--gold)" stop-opacity="0" />
+                                </linearGradient>
+                            </defs>
+                            <path id="equity-area" fill="url(#chartGrad)" d="" />
+                            <polyline id="equity-line" fill="none" stroke="var(--gold)" stroke-width="2" vector-effect="non-scaling-stroke" points="" />
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- VIEW: SIGNALS -->
+                <div id="view-signals" class="view">
+                    <div class="filter-scroll">
+                        <button class="btn btn-primary" onclick="filterSignals(&apos;all&apos;)" style="padding: 8px 16px; font-size: 13px;">All Signals <span class="text-muted" style="margin-left: 4px;" id="count-all"></span></button>
+                        <button class="btn btn-secondary" onclick="filterSignals(&apos;open&apos;)" style="padding: 8px 16px; font-size: 13px;">Open <span class="text-muted" style="margin-left: 4px;" id="count-open"></span></button>
+                        <button class="btn btn-secondary" onclick="filterSignals(&apos;waiting&apos;)" style="padding: 8px 16px; font-size: 13px;">Waiting <span class="text-muted" style="margin-left: 4px;" id="count-waiting"></span></button>
+                        <button class="btn btn-secondary" onclick="filterSignals(&apos;closed&apos;)" style="padding: 8px 16px; font-size: 13px;">Closed <span class="text-muted" style="margin-left: 4px;" id="count-closed"></span></button>
+                    </div>
+                    <div id="signals-list">
+                        <!-- Signal cards injected here -->
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- Mobile Bottom Nav -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" onclick="switchView('overview')" data-target="overview">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                Overview
+            </button>
+            <button class="nav-item" onclick="switchView('signals')" data-target="signals">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                Signals
+            </button>
+        </nav>
+
+    </div>
+
+    <!-- MODAL: POST SIGNAL -->
+    <div id="post-signal-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 class="text-lg">Post New Signal</h2>
+                <button class="btn-icon" onclick="closeModal('post-signal-modal')">✕</button>
+            </div>
+            
+            <form id="post-form">
+                <div class="form-group">
+                    <label class="form-label">Upload Chart</label>
+                    <input type="file" id="chart-upload" accept="image/*" style="color: var(--muted); font-size: 12px;">
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Asset</label>
+                        <input type="text" id="post-asset" class="form-input" placeholder="XAUUSD">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Category</label>
+                        <select id="post-category" class="form-input">
+                            <option value="Forex">Forex</option>
+                            <option value="Crypto">Crypto</option>
+                            <option value="Indices">Indices</option>
+                            <option value="Commodities">Commodities</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Direction</label>
+                        <select id="post-direction" class="form-input">
+                            <option value="BUY">BUY</option>
+                            <option value="SELL">SELL</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><!-- Spacer --></div>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Entry Price</label>
+                        <input type="number" id="post-entry" class="form-input" step="any">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Stop Loss</label>
+                        <input type="number" id="post-sl" class="form-input" step="any">
+                    </div>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Take Profit</label>
+                        <input type="number" id="post-tp" class="form-input" step="any">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Risk/Reward</label>
+                        <div id="rr-preview" class="form-input" style="border-color: transparent; background: transparent; font-weight: bold; color: var(--gold);">--</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Analysis Notes</label>
+                    <textarea id="post-analysis" class="form-input" rows="3"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Publish Signal</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="core.js?v=2"></script>
+
+    
+
+
+
+
+
+
+
+
+<!-- INLINE LOGIN (100% independent of core.js) -->
+<script>
+    const SB_URL = 'https://usayycqwgdyklfzrinvc.supabase.co';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzYXl5Y3F3Z2R5a2xmenJpbnZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM2MTg5NjYsImV4cCI6MjEwOTE5NDk2Nn0.jgEo3bvyKK_ak1yMRILX-32tCrg8BKSlzDvu-ccDq3w';
+    
+    async function doLogin() {
+        const email = document.getElementById('auth-email').value;
+        const password = document.getElementById('auth-password').value;
+        const btn = document.getElementById('btn-login');
+        
+        if (!email || !password) return alert('Please enter email and password');
+        
+        btn.innerText = 'Authenticating...';
+        btn.disabled = true;
+        
+        try {
+            // Wait for Supabase CDN
+            let attempts = 0;
+            while (!window.supabase && attempts < 50) {
+                await new Promise(r => setTimeout(r, 100));
+                attempts++;
+            }
+            if (!window.supabase) throw new Error('Supabase CDN failed to load');
+            
+            const client = window.supabase.createClient(SB_URL, SB_KEY);
+            const { data, error } = await client.auth.signInWithPassword({ email, password });
+            
+            if (error) throw error;
+            
+            btn.innerText = 'Success! Loading...';
+            // Reload so core.js picks up the session
+            setTimeout(() => location.reload(), 500);
+            
+        } catch (err) {
+            alert('Login error: ' + err.message);
+            btn.innerText = 'Login';
+            btn.disabled = false;
+        }
+    }
+</script>
+
+</body>
+</html>
